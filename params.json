@@ -1,0 +1,148 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "deploymentParams": {
+      "value": {
+        "location": "northeurope",
+        "loc_short_code": "ne",
+        "global_uniqueness": "001",
+        "enterprise_name": "Miztiik_Enterprises",
+        "enterprise_name_suffix": "aks-init",
+        "sub_deploymnet_prefix": "Miztiik_Verse"
+      }
+    },
+    "identityParams": {
+      "value": {
+        "namePrefix": "uami"
+      }
+    },
+    "storageAccountParams": {
+      "value": {
+        "storageAccountNamePrefix": "warehouse",
+        "storageAccountType": "Standard_ZRS",
+        "allowBlobPublicAccess": false,
+        "kind": "StorageV2",
+        "minimumTlsVersion": "TLS1_2",
+        "fault_tolerant_sku": "Standard_ZRS",
+        "sku": "Standard_ZRS",
+        "blobNamePrefix": "store-events"
+      }
+    },
+    "funcParams": {
+      "value": {
+        "funcStorageAccountNamePrefix": "funcstorage",
+        "funcAppPrefix": "store-backend",
+        "funcNamePrefix": "events",
+        "funcRuntime": "python",
+        "funcLogLevel": "Warning",
+        "skuName": "Y1",
+        "funcHostingPlanTier": "Dynamic"
+      }
+    },
+    "svc_bus_params": {
+      "value": {
+        "name_prefix": "warehouse",
+        "q_name": "store-events",
+        "topic_name": "store-events",
+        "subscription_name": "store-events"
+      }
+    },
+    "aks_params": {
+      "value": {
+        "name_prefix": "store-ops",
+        "node_count": 3,
+        "node_vm_size": "Standard_D2s_v5",
+        "node_os_disk_size_in_gb": 30,
+        "node_os_type": "Linux",
+        "vm_name_prefix": "m-web-srv",
+        "vm_subnet_name": "webSubnet01",
+        "admin_user_name": "miztiik",
+        "admin_password": {
+          "secure_string": "YOUR-ADMIN-PASSWRD-GOES-HERE-1NSTEAD-OF-THIS-T3xT!"
+        }
+      }
+    },
+    "acr_params": {
+      "value": {
+        "name_prefix": "containeryard"
+      }
+    },
+    "cosmosDbParams": {
+      "value": {
+        "cosmosDbNamePrefix": "store-backend",
+        "cosmosDatabaseName": "",
+        "cosmodDbContainerName": ""
+      }
+    },
+    "vnetParams": {
+      "value": {
+        "vnetNamePrefix": "dataGenSwarm",
+        "natGateway": false,
+        "subnets": [
+          {
+            "name": "GatewaySubnet",
+            "properties": {
+              "addressPrefix": "10.10.0.0/24",
+              "networkSecurityGroup": false,
+              "routeTable": false,
+              "natGateway": false,
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled",
+              "serviceEndpoints": []
+            },
+            "routeTable": {
+              "properties": {}
+            },
+            "securityRules": []
+          },
+          {
+            "name": "AzureFirewallSubnet",
+            "properties": {
+              "addressPrefix": "10.10.1.0/24",
+              "networkSecurityGroup": false,
+              "routeTable": false,
+              "natGateway": false,
+              "privateEndpointNetworkPolicies": "Enabled",
+              "privateLinkServiceNetworkPolicies": "Enabled",
+              "serviceEndpoints": []
+            },
+            "routeTable": {
+              "properties": {}
+            },
+            "securityRules": []
+          }
+        ]
+      }
+    },
+    "dceParams": {
+      "value": {
+        "endpointNamePrefix": "webStore"
+      }
+    },
+    "logAnalyticsWorkspaceParams": {
+      "value": {
+        "workspaceName": "lumberYard",
+        "retentionInDays": 32,
+        "dailyQuotaGb": 2,
+        "commitTier": false,
+        "storeEventsCustomTableName": "storeEvents",
+        "automationEventsCustomTableName": "miztiikAutomationEvents",
+        "managedRunCmdCustomTableName": "miztiikRunCmdEvents"
+      }
+    },
+    "brandTags": {
+      "value": {
+        "owner": "Mystique",
+        "automation_by": "Mystique_Automation",
+        "github_profile": "https://github.com/miztiik",
+        "about_me": "https://github.com/miztiik/about-me",
+        "udemy_profile": "https://www.udemy.com/user/n-kumar",
+        "skill_profile": "https://www.skillshare.com/r/profile/Kumar/407603333",
+        "buy_me_a_coffee": "https://ko-fi.com/miztiik",
+        "project": "azure-aks-getting-started",
+        "github_repo_url": "https://github.com/miztiik/azure-aks-getting-started"
+      }
+    }
+  }
+}
