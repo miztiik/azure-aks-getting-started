@@ -4,7 +4,8 @@ targetScope = 'resourceGroup'
 
 // Parameters
 param deploymentParams object
-param identityParams object
+param identity_params object
+param key_vault_params object
 
 param storageAccountParams object
 
@@ -29,9 +30,49 @@ module r_uami 'modules/identity/create_uami.bicep' = {
   name: '${deploymentParams.enterprise_name_suffix}_${deploymentParams.loc_short_code}_${deploymentParams.global_uniqueness}_uami'
   params: {
     deploymentParams: deploymentParams
-    identityParams: identityParams
+    identity_params: identity_params
     tags: tags
   }
+}
+
+@description('Add Permissions to User Assigned Managed Identity(UAMI)')
+module r_add_perms_to_uami 'modules/identity/assign_perms_to_uami.bicep' = {
+  name: 'perms_provider_to_uami_${deploymentParams.global_uniqueness}'
+  params: {
+    uami_name_akane: r_uami.outputs.uami_name_akane
+  }
+  dependsOn: [
+    r_uami
+  ]
+}
+
+@description('Create Key Vault')
+module r_kv 'modules/security/create_key_vault.bicep' = {
+  name: '${deploymentParams.enterprise_name_suffix}_${deploymentParams.loc_short_code}_${deploymentParams.global_uniqueness}_kv'
+  params: {
+    deploymentParams: deploymentParams
+    key_vault_params: key_vault_params
+    tags: tags
+    uami_name_akane: r_uami.outputs.uami_name_akane
+  }
+}
+
+@description('Create SSH Key')
+module r_ssh_key 'modules/security/create_ssh_key.bicep' = {
+  name: '${deploymentParams.enterprise_name_suffix}_${deploymentParams.loc_short_code}_${deploymentParams.global_uniqueness}_ssh_key'
+  params: {
+    deploymentParams: deploymentParams
+    tags: tags
+    key_vault_name: r_kv.outputs.key_vault_name
+    uami_name_akane: r_uami.outputs.uami_name_akane
+
+  }
+  dependsOn: [
+    r_kv
+    r_uami
+    r_add_perms_to_uami // This is required to be able to add secret to the key vault
+  ]
+
 }
 
 @description('Create Cosmos DB')
@@ -85,7 +126,7 @@ module r_blob 'modules/storage/create_blob.bicep' = {
 @description('Create the Service Bus & Queue')
 module r_svc_bus 'modules/integration/create_svc_bus.bicep' = {
   // scope: resourceGroup(r_rg.name)
-  name: '${svc_bus_params.name_prefix}_${deploymentParams.global_uniqueness}_Svc_Bus'
+  name: '${svc_bus_params.name_prefix}_${deploymentParams.global_uniqueness}_svc_bus'
   params: {
     deploymentParams: deploymentParams
     svc_bus_params: svc_bus_params
@@ -95,7 +136,7 @@ module r_svc_bus 'modules/integration/create_svc_bus.bicep' = {
 
 // Create Data Collection Endpoint
 module r_dataCollectionEndpoint 'modules/monitor/data_collection_endpoint.bicep' = {
-  name: '${dceParams.endpointNamePrefix}_${deploymentParams.global_uniqueness}_Dce'
+  name: '${dceParams.endpointNamePrefix}_${deploymentParams.global_uniqueness}_dce'
   params: {
     deploymentParams: deploymentParams
     dceParams: dceParams
@@ -106,7 +147,7 @@ module r_dataCollectionEndpoint 'modules/monitor/data_collection_endpoint.bicep'
 
 // Create the Data Collection Rule
 module r_dataCollectionRule 'modules/monitor/data_collection_rule.bicep' = {
-  name: '${logAnalyticsWorkspaceParams.workspaceName}_${deploymentParams.global_uniqueness}_Dcr'
+  name: '${logAnalyticsWorkspaceParams.workspaceName}_${deploymentParams.global_uniqueness}_dcr'
   params: {
     deploymentParams: deploymentParams
     osKind: 'Linux'
@@ -136,23 +177,12 @@ module r_dataCollectionRule 'modules/monitor/data_collection_rule.bicep' = {
 
 // Create the VNets
 module r_vnet 'modules/vnet/create_vnet.bicep' = {
-  name: '${vnetParams.vnetNamePrefix}_${deploymentParams.global_uniqueness}_Vnet'
+  name: '${vnetParams.vnetNamePrefix}_${deploymentParams.global_uniqueness}_vnet'
   params: {
     deploymentParams: deploymentParams
     vnetParams: vnetParams
     tags: tags
   }
-}
-
-@description('Add Permissions to UAMI')
-module r_add_perms_to_uami 'modules/identity/assign_perms_to_uami.bicep' = {
-  name: 'perms_provider_to_uami_${deploymentParams.global_uniqueness}'
-  params: {
-    uami_name_akane: r_uami.outputs.uami_name_akane
-  }
-  dependsOn: [
-    r_uami
-  ]
 }
 
 @description('Create Container Registry')
@@ -176,6 +206,9 @@ module r_aks 'modules/containers/create_aks.bicep' = {
     tags: tags
     uami_name_akane: r_uami.outputs.uami_name_akane
     logAnalyticsWorkspaceName: r_logAnalyticsWorkspace.outputs.logAnalyticsPayGWorkspaceName
+
+    vnetName: r_vnet.outputs.vnetName
+
     acr_name: r_container_registry.outputs.acr_name
 
     saName: r_sa.outputs.saName

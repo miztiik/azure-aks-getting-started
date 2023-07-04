@@ -10,5 +10,5 @@ if [ -f "$SSH_KEY_FILE" ]; then
 fi
 
 # Generate the SSH key without a passphrase
-# ssh-keygen -t rsa -b 4096 -N "" -f "$SSH_KEY_FILE"
-ssh-keygen -t rsa -b 4096 -N "" -f "$SSH_KEY_FILE"
+# ssh-keygen -t rsa -b 4096 -N "" -f "$SSH_KEY_FILE" 
+ssh-keygen -t rsa -b 4096 -N "" -f "$SSH_KEY_FILE" -C "miztiik@git"

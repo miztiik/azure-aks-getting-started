@@ -1,6 +1,6 @@
 // SET MODULE DATE
 param module_metadata object = {
-  module_last_updated : '2023-06-04'
+  module_last_updated: '2023-06-04'
   owner: 'miztiik@github'
 }
 
@@ -27,52 +27,51 @@ param dbSubnet02Cidr string = '10.0.7.0/24'
 param dbSubnet02Cidr string = '10.0.8.0/24'
 */
 
-
 resource r_vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: '${vnetParams.vnetNamePrefix}_${deploymentParams.loc_short_code}_vnet_${deploymentParams.global_uniqueness}'
   location: deploymentParams.location
   tags: tags
   properties: {
     addressSpace: vnetAddPrefixes
-  subnets: [
-    {
-      name: 'webSubnet01'
-      properties: {
-        addressPrefix: webSubnet01Cidr
+    subnets: [
+      {
+        name: 'webSubnet01'
+        properties: {
+          addressPrefix: webSubnet01Cidr
+        }
       }
-    }
-    {
-      name: 'webSubnet02'
-      properties: {
-        addressPrefix: webSubnet02Cidr
+      {
+        name: 'webSubnet02'
+        properties: {
+          addressPrefix: webSubnet02Cidr
+        }
       }
-    }
-    {
-      name: 'appSubnet01'
-      properties: {
-        addressPrefix: appSubnet01Cidr
+      {
+        name: 'appSubnet01'
+        properties: {
+          addressPrefix: appSubnet01Cidr
+        }
       }
-    }
-    {
-      name: 'appSubnet02'
-      properties: {
-        addressPrefix: appSubnet02Cidr
+      {
+        name: 'appSubnet02'
+        properties: {
+          addressPrefix: appSubnet02Cidr
+        }
       }
-    }
-    {
-      name: 'dbSubnet01'
-      properties: {
-        addressPrefix: dbSubnet01Cidr
+      {
+        name: 'dbSubnet01'
+        properties: {
+          addressPrefix: dbSubnet01Cidr
+        }
       }
-    }
-    {
-      name: 'dbSubnet02'
-      properties: {
-        addressPrefix: dbSubnet02Cidr
+      {
+        name: 'dbSubnet02'
+        properties: {
+          addressPrefix: dbSubnet02Cidr
+        }
       }
-    }
-  ]
-}
+    ]
+  }
 }
 
 // resource ng 'Microsoft.Network/natGateways@2021-03-01' = if (natGateway) {
@@ -113,4 +112,3 @@ output vnetSubnets array = r_vnet.properties.subnets
 
 output dbSubnet01Id string = r_vnet.properties.subnets[4].id
 output dbSubnet02Id string = r_vnet.properties.subnets[5].id
-

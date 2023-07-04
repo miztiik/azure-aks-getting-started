@@ -1,6 +1,6 @@
 // SET MODULE DATE
 param module_metadata object = {
-  module_last_updated : '2023-05-23'
+  module_last_updated: '2023-07-02'
   owner: 'miztiik@github'
 }
 
@@ -21,7 +21,7 @@ resource r_sa 'Microsoft.Storage/storageAccounts@2021-06-01' existing = {
 resource r_blobSvc 'Microsoft.Storage/storageAccounts/blobServices@2021-06-01' = {
   parent: r_sa
   name: 'default'
-  properties:{
+  properties: {
     cors: {
       corsRules: []
     }
@@ -36,7 +36,13 @@ resource r_blobContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
   }
 }
 
-// Enabling Diagnostics for the storage account
+////////////////////////////////////////////
+//                                        //
+//         Diagnostic Settings            //
+//                                        //
+////////////////////////////////////////////
+
+@description('Enabling Diagnostics for the storage account')
 resource storageDataPlaneLogs 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (enableDiagnostics) {
   name: '${storageAccountName}-Diaglogs'
   scope: r_sa
@@ -57,13 +63,11 @@ resource storageDataPlaneLogs 'Microsoft.Insights/diagnosticSettings@2021-05-01-
   }
 }
 
-
 // OUTPUTS
 output module_metadata object = module_metadata
 
 output blobContainerId string = r_blobContainer.id
 output blobContainerName string = r_blobContainer.name
-
 
 // Get reference of SA
 resource r_sa_1 'Microsoft.Storage/storageAccounts@2021-06-01' existing = {
@@ -74,7 +78,7 @@ resource r_sa_1 'Microsoft.Storage/storageAccounts@2021-06-01' existing = {
 resource r_blobSvc_1 'Microsoft.Storage/storageAccounts/blobServices@2021-06-01' = {
   parent: r_sa_1
   name: 'default'
-  properties:{
+  properties: {
     cors: {
       corsRules: []
     }

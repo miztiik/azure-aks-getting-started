@@ -4,7 +4,7 @@
 # Global Variables
 CURRENT_PWD:=$(shell pwd)
 VENV_DIR:=.env
-AWS_PROFILE:=elf
+
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -21,6 +21,13 @@ func: ## Trigger Only Funtion code deployments
 
 docker: ## Build docker image
 	sh app/container_builds/event_processor_for_svc_bus_queues/build_and_push_img.sh
+
+powerup: ## Add permissions to deployment id (NOT WORKING - WIP)
+	sh deployment_scripts/add_perms_to_deployement_id.sh
+
+spice: ## Deploy to k8s
+	sh app/k8s/bootstrap_cluster/deploy_dashboard.sh
+
 
 destroy: ## Delete deployments without confirmation
 	sh deployment_scripts/destroy.sh shiva

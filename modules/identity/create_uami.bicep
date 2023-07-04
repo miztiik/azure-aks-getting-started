@@ -1,14 +1,14 @@
 // SET MODULE DATE
 param module_metadata object = {
-  module_last_updated : '2023-06-15'
+  module_last_updated: '2023-06-15'
   owner: 'miztiik@github'
 }
 
 param deploymentParams object
-param identityParams object
+param identity_params object
 param tags object
 
-var _prebaked_uami_name_prefix = '${identityParams.namePrefix}_${deploymentParams.enterprise_name_suffix}_${deploymentParams.global_uniqueness}'
+var _prebaked_uami_name_prefix = '${identity_params.name_prefix}_${deploymentParams.enterprise_name_suffix}_${deploymentParams.global_uniqueness}'
 
 @description('Create User-Assigned Managed Identity - For Everything')
 resource r_uami_akane 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
@@ -45,7 +45,6 @@ resource r_uami_func 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
 //   tags: tags
 // }
 
-
 // @description('Create User-Assigned Managed Identity - For AKS')
 // resource r_uami_aks 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
 //   name: '${_prebaked_uami_name_prefix}_aks'
@@ -53,14 +52,12 @@ resource r_uami_func 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-3
 //   tags: tags
 // }
 
-
 // @description('Create User-Assigned Managed Identity - For Logic App')
 // resource r_uami_logic_app 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
 //   name: '${_prebaked_uami_name_prefix}_logic_app'
 //   location: deploymentParams.location
 //   tags: tags
 // }
-
 
 // Output
 output module_metadata object = module_metadata
