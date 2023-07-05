@@ -1,6 +1,6 @@
 #!/bin/bash
 # set -x
-set -e
+# set -e
 
 
 # Define colors for console output

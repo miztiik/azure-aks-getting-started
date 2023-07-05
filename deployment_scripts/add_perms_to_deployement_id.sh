@@ -1,7 +1,4 @@
 #!/bin/bash
-set -ex
-
-
 # set -x
 set -e
 
@@ -52,17 +49,9 @@ function add_kv_rbac_perms(){
         echo -e "${GREEN}Successfully added RBAC permissions to Key Vault${RESET}"
     else
         echo -e "${RED}Failed to add RBAC permissions to Key Vault${RESET}"
-        exit 1
     fi
 }
 
 add_kv_rbac_perms
 
 
-# Assign Azure Kubernetes Service RBAC Cluster Admin role to the current user
-echo "Checking if [$userPrincipalName] user has been assigned to [Azure Kubernetes Service RBAC Cluster Admin] role on the [$aksName] AKS cluster..."
-role=$(az role assignment list \
-    --assignee $userObjectId \
-    --scope $aksClusterId \
-    --query [?roleDefinitionName].roleDefinitionName \
-    --output tsv 2>/dev/null)

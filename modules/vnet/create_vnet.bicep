@@ -27,6 +27,9 @@ param dbSubnet02Cidr string = '10.0.7.0/24'
 param dbSubnet02Cidr string = '10.0.8.0/24'
 */
 
+param k8s_subnet_cidr string = '10.0.128.0/19'
+// param k8s_service_cidr string = '10.0.191.0/24' // Do not change this
+
 resource r_vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
   name: '${vnetParams.vnetNamePrefix}_${deploymentParams.loc_short_code}_vnet_${deploymentParams.global_uniqueness}'
   location: deploymentParams.location
@@ -68,6 +71,12 @@ resource r_vnet 'Microsoft.Network/virtualNetworks@2021-05-01' = {
         name: 'dbSubnet02'
         properties: {
           addressPrefix: dbSubnet02Cidr
+        }
+      }
+      {
+        name: 'k8s_subnet'
+        properties: {
+          addressPrefix: k8s_subnet_cidr
         }
       }
     ]

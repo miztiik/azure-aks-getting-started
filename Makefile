@@ -26,6 +26,7 @@ powerup: ## Add permissions to deployment id (NOT WORKING - WIP)
 	sh deployment_scripts/add_perms_to_deployement_id.sh
 
 spice: ## Deploy to k8s
+	sh app/k8s/bootstrap_cluster/setup_kubeconfig.sh
 	sh app/k8s/bootstrap_cluster/deploy_dashboard.sh
 
 

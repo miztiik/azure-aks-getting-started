@@ -1,14 +1,12 @@
-# Efficient Processing of Events Using Container Instance in Azure
+# Azure Kubernetes Service - Getting Started
 
-Mystique Enterprises operates multiple web stores that generate a significant number of events related to sales and inventory. These events need to be processed in a timely and efficient manner. Mystique Enterprises is exploring the use of container instance to handle the event processing workload, enabling scalability and performance optimization. They seek a solution that allows them to seamlessly process store events, while ensuring data integrity and compliance. The goal is to streamline the event processing workflow and achieve faster, reliable, and cost-effective processing of store events without spending time and effort on infrastructure management.
-
-Can you provide guidance on how to accomplish this?
+Mystique Enterprises want to use Azure Kubernetes Service, Can you provide guidance on how to accomplish this?
 
 ## 🎯 Solution
 
-To achieve efficient processing of events, Mystique Enterprises can utilize Azure Service Bus for reliable event messaging. They can containerize their event processing logic using Container Instance and store the container images in Azure Container Registry. The events can be persisted in Blob storage and Cosmos DB for data storage and management. To ensure secure and controlled access to resources, a Managed Identity can be used. Monitoring for metrics and performance can be implemented using Azure Monitor. This solution enables seamless event processing, scalability, data integrity, and compliance for Mystique Enterprises.
+The _very_ high level overview of Azure Kubernetes Service looks like this,
 
-![Miztiik Automation - Efficient Processing of Events Using Container Instance in Azure](images/miztiik_architecture_container_instance_event_processor_001.png)
+![Miztiik Automation - Azure Kubernetes Service - Getting Started](images/miztiik_architecture_kubernetes_service_001.png)
 
 1. ## 🧰 Prerequisites
 
@@ -26,8 +24,8 @@ To achieve efficient processing of events, Mystique Enterprises can utilize Azur
    - Get the application code
 
      ```bash
-     git clone https://github.com/miztiik/azure-container-app-event-processor.git
-     cd azure-container-app-event-processor
+     git clone https://github.com/miztiik/azure-aks-getting-started.git
+     cd azure-aks-getting-started
      ```
 
 3. ## 🚀 Prepare the local environment
@@ -57,16 +55,12 @@ To achieve efficient processing of events, Mystique Enterprises can utilize Azur
         - A namespace and a queue will be created. The Azure container instance will use this queue to publish and retrieve events
      - **Azure Container Registry**
         - To host the producer and consumer container images
-        - The build scripts at `app/container_builds/event_processor_for_svc_bus_queues/build_and_push_img.sh` will build the container images and push them to ACR.
-        - To streamline the deployment process <ins>without</ins> using DevOps pipelines, the container image needs to be built locally and pushed to ACR using the above script. However, this approach requires separate deployment of the container instance, which will be addressed in the next iteration. It's important to note that the initial deployment will <ins>fail</ins> due to missing images. Once the images are available, redeploy the main stack for a successful deployment.
-     - **Container Instance**
-        - **Producer**: Python Flask app with two routes 
-          - `/` for index page - Will be used for health check and readiness probes
-          - `/event-producer` customized to generate events and ingest them to service bus. The number of event to produce with each request can be configured through environment variable `TOT_MSGS_TO_PRODUCE` defaults to `15`
-        - **Consumer**: Python Flask app with two routes 
-          - `/` for index page - Will be used for health check and readiness probes
-          - `/event-consumer` customized to consume events from service bus and store them in cosmos db. The number of event to consume with each request can be configured through environment variable `MAX_MSGS_TO_PROCESS` defaults to `10`
-        - **Note**: The container instance are configured to use the managed identity to access other resources. The managed identity is configured to have access to the service bus queue, storage account and cosmos db. To get this to work the environment variable `AZURE_CLIENT_ID` needs to be setup with the managed identity client id.
+     - **Azure Kubernetes Service**
+        - **Vnet CIDR**: `10.0.0.0/16` 
+        - **Node & Pod Subnet CIDR**: `10.0.128.0/19` 
+        - **Service CIDR**: `10.0.191.0/24` 
+        - **K8s DNS CIDR**: `10.0.191.10` 
+        - **Node Count**: `1` in `3` node pools
 
       Initiate the deployment with the following command,
 
@@ -79,58 +73,31 @@ To achieve efficient processing of events, Mystique Enterprises can utilize Azur
 
 5. ## 🔬 Testing the solution
 
-   - **Trigger the Event Producer function**
+   - **Install Kubernetes Dashboad**
+
+      There is a simple script to install the dashboard. You can find it in here `app/k8s/bootstrap_cluster/deploy_dashboard.sh` folder. 
 
       ```bash
-      PRODUCER_URL="containerinst-ne-store-ops-001-producer.northeurope.azurecontainer.io/event-producer"
-      for i in {1..10}
-      do
-      echo "Sending event batch $i"
-      curl $PRODUCER_URL &
-      sleep 5
-      done
+      sh app/k8s/bootstrap_cluster/setup_kubeconfig.sh
+      sh app/k8s/bootstrap_cluster/deploy_dashboard.sh
+
+      # or
+      # make spice
       ```
 
       You should see an output like this, We are sending batch of events every `5` seconds.
 
-      ```json
-      Sending event batch 1
-      [1] 2814
-      Sending event batch 2
-      [2] 2816
-      Sending event batch 3
-      [3] 2818
-      Sending event batch 4
-      ...
+      ```text
+      Access Dashboard - http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/       
+      DASHBOARD TOKEN: eyJh...rZbug   
       ```
 
-      As we are batching the upload of telemetry data to application insights, It takes few minutes for the data to show up there. You can check the `Live Metrics` section of the `store-events-producer-fn` function app. 
-
-      ![Miztiik Automation - Efficient Processing of Events Using Container Instance in Azure](images/miztiik_architecture_container_instance_event_processor_002.png)
-      ![Miztiik Automation - Efficient Processing of Events Using Container Instance in Azure](images/miztiik_architecture_container_instance_event_processor_003.png)
-      ![Miztiik Automation - Efficient Processing of Events Using Container Instance in Azure](images/miztiik_architecture_container_instance_event_processor_004.png)
-      ![Miztiik Automation - Efficient Processing of Events Using Container Instance in Azure](images/miztiik_architecture_container_instance_event_processor_005.png)
-     
-
-   - **Trigger the Event Consumer function**
-      ```bash
-      CONSUMER_URL="containerinst-ne-store-ops-001-consumer.northeurope.azurecontainer.io/event-consumer"
-      for i in {1..10}
-      do
-      echo "Receive event batch $i"
-      curl $CONSUMER_URL &
-      sleep 5
-      done
-      ```     
-
-      ![Miztiik Automation - Efficient Processing of Events Using Container Instance in Azure](images/miztiik_architecture_container_instance_event_processor_006.png)
-      ![Miztiik Automation - Efficient Processing of Events Using Container Instance in Azure](images/miztiik_architecture_container_instance_event_processor_007.png)
-      ![Miztiik Automation - Efficient Processing of Events Using Container Instance in Azure](images/miztiik_architecture_container_instance_event_processor_008.png)
+      ![Miztiik Automation - Azure Kubernetes Service - Getting Started](images/miztiik_architecture_kubernetes_service_002.png)
 
 
 6. ## 📒 Conclusion
 
-    In conclusion, this blog highlights the benefits of using container instance in Azure for efficient event processing. By leveraging containerization and Azure services, such as Azure Service Bus, Container Registry, Blob, and Cosmos, Miztiik Enterprises can streamline their event processing workflow, ensuring scalability, reliability, and cost-effectiveness. The use of managed identity and monitoring for metrics further enhances the security and observability of the containerized solution. With this approach, Miztiik Enterprises can optimize their event-driven architecture, achieve faster processing of store events, and eliminate the need for manual infrastructure management.
+    In conclusion, this blog helps you to get started with Azure kubernetes service.
   
 7. ## 🧹 CleanUp
 

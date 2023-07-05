@@ -71,6 +71,9 @@ var linux_auth_config = {
   }
 }
 
+param k8s_service_cidr string = '10.0.191.0/24'
+param k8s_dns_service_ip string = '10.0.191.10'
+
 //https://github.com/ap-communications/bicep-templates/blob/c59dc42add78638ae3039144f9fea8dd4d9d8414/computes/linux-vm.bicep
 
 param _cluster_name string = replace('c-${aks_params.name_prefix}-${deploymentParams.loc_short_code}-${deploymentParams.enterprise_name_suffix}-${deploymentParams.global_uniqueness}', '_', '-')
@@ -102,8 +105,8 @@ resource r_aks_c_1 'Microsoft.ContainerService/managedClusters@2023-05-02-previe
       networkPolicy: 'azure'
       loadBalancerSku: 'standard'
       outboundType: 'loadBalancer'
-      // serviceCidr: '10.1.0.0/16
-      // dnsServiceIP: '10.1.0.10'
+      serviceCidr: k8s_service_cidr
+      dnsServiceIP: k8s_dns_service_ip
       // dockerBridgeCidr: dockerBridgeCidr 
     }
     agentPoolProfiles: [
@@ -116,7 +119,7 @@ resource r_aks_c_1 'Microsoft.ContainerService/managedClusters@2023-05-02-previe
         osDiskType: 'Managed'
         maxPods: 110
         mode: 'System'
-        vnetSubnetID: '${r_vnet.id}/subnets/k8s_usr_subnet'
+        vnetSubnetID: '${r_vnet.id}/subnets/k8s_subnet'
         powerState: {
           code: 'Running'
         }
@@ -127,7 +130,7 @@ resource r_aks_c_1 'Microsoft.ContainerService/managedClusters@2023-05-02-previe
         count: aks_params.system_node_count
         vmSize: 'Standard_B4ms'
         kubeletDiskType: 'OS'
-        vnetSubnetID: '${r_vnet.id}/subnets/k8s_usr_subnet'
+        vnetSubnetID: '${r_vnet.id}/subnets/k8s_subnet'
         maxPods: 110
         type: 'VirtualMachineScaleSets'
         maxCount: 2
@@ -195,8 +198,8 @@ resource r_usr_pool_ln_1 'Microsoft.ContainerService/managedClusters/agentPools@
       'nodepool-type': 'user'
       'miztiik-automation': 'true'
     }
-    vnetSubnetID: '${r_vnet.id}/subnets/k8s_usr_subnet'
-    // podSubnetID: '${r_vnet.id}/subnets/k8s_usr_subnet'
+    vnetSubnetID: '${r_vnet.id}/subnets/k8s_subnet'
+    // podSubnetID: '${r_vnet.id}/subnets/k8s_subnet'
     // upgradeSettings: {
     //   maxSurge: '33%'
     // }

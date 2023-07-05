@@ -6,7 +6,7 @@
       "value": {
         "location": "northeurope",
         "loc_short_code": "ne",
-        "global_uniqueness": "009",
+        "global_uniqueness": "010",
         "enterprise_name": "Miztiik_Enterprises",
         "enterprise_name_suffix": "aks-init",
         "sub_deploymnet_prefix": "Miztiik_Verse"

@@ -44,30 +44,41 @@ resource r_ssh_key_deployment_script 'Microsoft.Resources/deploymentScripts@2020
     //https://github.com/jwendl/bicep-iot-edge-device-vm/blob/b1a5e5f146a905b8a7f83e0655957c5aef1f06f6/deploy/bicep/modules/ssh-keys.bicep#L23
     scriptContent: '''
       #!/bin/bash
+      set -euxo pipefail
+      KV_INJECT_STATUS="NO_KEY_EXISTS"
+      SSH_PUB_KEY=""
+      SSH_PVT_KEY=""
+      DATE_TIME=""
 
       if az keyvault secret show --vault-name  ${KEY_VAULT_NAME} --name "${SSH_KEY_NAME}-pub" --output none
         then
-            az keyvault secret show --vault-name  ${KEY_VAULT_NAME} --name "${SSH_KEY_NAME}-pub" --query value --output tsv > ~/.ssh/id_rsa.pub
+          echo "SSH Key found in Key Vault. Fetching the key pair"
+          SSH_PUB_KEY=$(az keyvault secret show --vault-name  ${KEY_VAULT_NAME} --name "${SSH_KEY_NAME}-pub" --query value --output tsv)
+          SSH_PVT_KEY=$(az keyvault secret show --vault-name  ${KEY_VAULT_NAME} --name "${SSH_KEY_NAME}-pvt" --query value --output tsv)
+          KV_INJECT_STATUS="KEY_EXISTS"
         else
+            echo "SSH Key not found in Key Vault. Generating new key pair"
             ssh-keygen -t rsa -b 4096 -N "" -f ~/.ssh/id_rsa  -C "miztiik@git"
             # ssh-keygen -t rsa -m pem -b 4096 -N "" -f ~/.ssh/id_rsa  -C "miztiik@git" # For PEM Format
       
             SSH_PUB_KEY=$(cat ~/.ssh/id_rsa.pub)
             SSH_PVT_KEY=$(cat ~/.ssh/id_rsa)
 
-          az keyvault secret set --name "${SSH_KEY_NAME}-pub" --vault-name ${KEY_VAULT_NAME} --value "${SSH_PUB_KEY}"
-          az keyvault secret set --name "${SSH_KEY_NAME}-pvt" --vault-name ${KEY_VAULT_NAME} --value "${SSH_PVT_KEY}"
+            az keyvault secret set --name "${SSH_KEY_NAME}-pub" --vault-name ${KEY_VAULT_NAME} --value "${SSH_PUB_KEY}"
+            az keyvault secret set --name "${SSH_KEY_NAME}-pvt" --vault-name ${KEY_VAULT_NAME} --value "${SSH_PVT_KEY}"
+
+          KV_INJECT_STATUS="NEW_KEY_CREATED"
       fi
       
       # Save the output to a file
-      # jq -n --arg SSH_PUB_KEY "$SSH_PUB_KEY" -c '{ SSH_PUB_KEY: $SSH_PUB_KEY }' > $AZ_SCRIPTS_OUTPUT_PATH
       cat <<EOF >$AZ_SCRIPTS_OUTPUT_PATH
       {
+        "KV_INJECT_STATUS": "${KV_INJECT_STATUS}",
         "SSH_PUB_KEY": "${SSH_PUB_KEY}",
-        "SSH_PVT_KEY": "${SSH_PVT_KEY}"
+        "SSH_PVT_KEY": "${SSH_PVT_KEY}",
+        "DATE_TIME": "$(date)"
       }
       EOF
-
     '''
     arguments: '-v'
     environmentVariables: [
